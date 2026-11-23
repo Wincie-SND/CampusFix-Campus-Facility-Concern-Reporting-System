@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@source "../views/**/*.blade.php";
+
+@theme {
+    --color-campus-ink: #14263d;
+    --color-campus-blue: #2458a6;
+    --color-campus-pale: #f4f7fb;
+    --color-campus-gold: #f1b84b;
+    --shadow-soft: 0 18px 50px rgba(20, 38, 61, .08);
+}

@@ -3,9 +3,9 @@
 @source "../views/**/*.blade.php";
 
 @theme {
-    --color-campus-ink: #14263d;
-    --color-campus-blue: #2458a6;
-    --color-campus-pale: #f4f7fb;
-    --color-campus-gold: #f1b84b;
-    --shadow-soft: 0 18px 50px rgba(20, 38, 61, .08);
+    --color-campus-ink: #173b36;
+    --color-campus-blue: #18806b;
+    --color-campus-pale: #f4f7f6;
+    --color-campus-gold: #d6b65b;
+    --shadow-soft: 0 18px 48px rgba(25, 61, 54, .08);
 }

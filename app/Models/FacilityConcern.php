@@ -12,6 +12,8 @@ class FacilityConcern extends Model
         'reviewed_by',
         'reference_code',
         'category',
+        'title',
+        'building',
         'location',
         'description',
         'photo_path',

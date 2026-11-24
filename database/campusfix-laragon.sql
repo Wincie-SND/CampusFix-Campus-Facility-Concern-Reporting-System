@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS facility_concerns (
   reviewed_by bigint unsigned DEFAULT NULL,
   reference_code varchar(40) DEFAULT NULL,
   category varchar(50) NOT NULL,
+  title varchar(120) DEFAULT NULL,
+  building varchar(120) DEFAULT NULL,
   location varchar(255) NOT NULL,
   description text NOT NULL,
   photo_path varchar(255) DEFAULT NULL,
@@ -70,9 +72,39 @@ CREATE TABLE IF NOT EXISTS facility_concerns (
   CONSTRAINT facility_concerns_reviewed_by_foreign_key FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+SET @campusfix_title_exists = (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'facility_concerns' AND COLUMN_NAME = 'title'
+);
+SET @campusfix_title_sql = IF(@campusfix_title_exists = 0,
+  'ALTER TABLE facility_concerns ADD COLUMN title varchar(120) DEFAULT NULL AFTER category', 'SELECT 1');
+PREPARE campusfix_title_stmt FROM @campusfix_title_sql;
+EXECUTE campusfix_title_stmt;
+DEALLOCATE PREPARE campusfix_title_stmt;
+
+SET @campusfix_building_exists = (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'facility_concerns' AND COLUMN_NAME = 'building'
+);
+SET @campusfix_building_sql = IF(@campusfix_building_exists = 0,
+  'ALTER TABLE facility_concerns ADD COLUMN building varchar(120) DEFAULT NULL AFTER title', 'SELECT 1');
+PREPARE campusfix_building_stmt FROM @campusfix_building_sql;
+EXECUTE campusfix_building_stmt;
+DEALLOCATE PREPARE campusfix_building_stmt;
+
 INSERT IGNORE INTO migrations (migration, batch) VALUES
   ('0001_01_01_000000_create_users_table', 1),
-  ('2026_11_23_000001_create_facility_concerns_table', 1);
+  ('2026_11_23_000001_create_facility_concerns_table', 1),
+  ('2026_11_24_000001_normalize_admin_users_to_staff_role', 2),
+  ('2026_11_24_000002_add_title_and_building_to_facility_concerns_table', 2);
+
+UPDATE users SET role = 'staff' WHERE role = 'admin';
 
 INSERT IGNORE INTO users (name, email, role, password, created_at, updated_at) VALUES
-  ('CampusFix Administrator', 'admin@campusfix.test', 'admin', '$2y$12$2fzjLQQ/E/pgfBW33wSZ8OqsXejF/q1GJzmG/QuyX/S/cUY9pkfeS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+  ('CampusFix Administrator', 'admin@campusfix.test', 'staff', '$2y$12$2fzjLQQ/E/pgfBW33wSZ8OqsXejF/q1GJzmG/QuyX/S/cUY9pkfeS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Student One', 'student1@campusfix.test', 'student', '$2y$12$sba9/Z2BmKWmHmIr32yfj.hgCBlDuO4IU8EoscvKYy5BBQqebw4YW', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Student Two', 'student2@campusfix.test', 'student', '$2y$12$sba9/Z2BmKWmHmIr32yfj.hgCBlDuO4IU8EoscvKYy5BBQqebw4YW', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Student Three', 'student3@campusfix.test', 'student', '$2y$12$sba9/Z2BmKWmHmIr32yfj.hgCBlDuO4IU8EoscvKYy5BBQqebw4YW', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Guest', 'guest@campusfix.test', 'guest', '$2y$12$0MIC9D..tHLiDI.9JqbFIOJBo7Pkm.ifEkQQqEGkn1C9xjj4.mV16', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Faculty', 'faculty@campusfix.test', 'faculty', '$2y$12$x6jZS2Vw9ZGEljV3sxfite80/bwZBjQ2p8OQMyIPRfMmN3rQbaj4e', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('CampusFix Staff', 'staff@campusfix.test', 'staff', '$2y$12$XMkJM12.g2PIFoiIpN8B.OC5DxV3CptSWUM8xpl4pd9nKXRvgW.n6', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

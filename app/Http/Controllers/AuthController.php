@@ -51,6 +51,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', 'in:student,guest'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -58,7 +59,7 @@ class AuthController extends Controller
             'name' => trim($data['name']),
             'email' => strtolower($data['email']),
             'password' => $data['password'],
-            'role' => 'student',
+            'role' => $data['role'],
         ]);
 
         Auth::login($user);

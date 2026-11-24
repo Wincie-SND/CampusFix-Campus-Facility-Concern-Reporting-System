@@ -25,7 +25,9 @@ class AdminConcernController extends Controller
             $query->where(function ($builder) use ($search): void {
                 $like = '%'.$search.'%';
                 $builder->where('reference_code', 'like', $like)
+                    ->orWhere('title', 'like', $like)
                     ->orWhere('category', 'like', $like)
+                    ->orWhere('building', 'like', $like)
                     ->orWhere('location', 'like', $like)
                     ->orWhere('description', 'like', $like)
                     ->orWhereHas('user', function ($userQuery) use ($like): void {
@@ -35,8 +37,13 @@ class AdminConcernController extends Controller
             });
         }
 
+        $concerns = $query->paginate(8)->withQueryString();
+        $selectedConcern = $concerns->getCollection()->firstWhere('id', $request->integer('selected'))
+            ?? $concerns->first();
+
         return view('admin.concerns.index', [
-            'concerns' => $query->paginate(12)->withQueryString(),
+            'concerns' => $concerns,
+            'selectedConcern' => $selectedConcern,
             'status' => $status,
             'search' => $search,
             'statuses' => FacilityConcern::STATUSES,
@@ -62,7 +69,10 @@ class AdminConcernController extends Controller
             'reviewed_by' => $request->user()->id,
         ]);
 
-        return redirect()->route('concerns.show', $concern)
-            ->with('success', 'The report status has been updated.');
+        $redirect = $request->input('return_to') === 'queue'
+            ? redirect()->route('admin.concerns.index', ['selected' => $concern->id])
+            : redirect()->route('concerns.show', $concern);
+
+        return $redirect->with('success', 'The report status has been updated.');
     }
 }

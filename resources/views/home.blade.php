@@ -25,7 +25,7 @@
                     </a>
                     <a href="{{ route('login') }}" class="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">Sign in to track a report</a>
                 </div>
-                <p class="mt-5 text-xs text-blue-100/55">For students and authorized university administrators</p>
+                <p class="mt-5 text-xs text-blue-100/55">For students, guests, faculty, and university staff</p>
             </div>
 
             <div class="relative mx-auto w-full max-w-lg">
@@ -48,12 +48,12 @@
                         <div class="ml-4 h-3 border-l border-dashed border-slate-200"></div>
                         <div class="flex gap-4">
                             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-50 text-sm font-extrabold text-amber-700">02</span>
-                            <div><h3 class="font-bold text-campus-ink">Administrators review it</h3><p class="mt-1 text-sm leading-6 text-slate-500">Your report enters a shared queue for authorized campus staff.</p></div>
+                            <div><h3 class="font-bold text-campus-ink">Staff and faculty review it</h3><p class="mt-1 text-sm leading-6 text-slate-500">Your report enters a shared queue for authorized campus reviewers.</p></div>
                         </div>
                         <div class="ml-4 h-3 border-l border-dashed border-slate-200"></div>
                         <div class="flex gap-4">
                             <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-50 text-sm font-extrabold text-emerald-700">03</span>
-                            <div><h3 class="font-bold text-campus-ink">Follow the status</h3><p class="mt-1 text-sm leading-6 text-slate-500">Check your report for its latest status and administrator notes.</p></div>
+                            <div><h3 class="font-bold text-campus-ink">Follow the status</h3><p class="mt-1 text-sm leading-6 text-slate-500">Check your report for its latest status and review notes.</p></div>
                         </div>
                     </div>
                     <div class="mt-7 rounded-2xl bg-campus-pale px-4 py-3 text-xs leading-5 text-slate-500"><span class="font-bold text-campus-ink">CampusFix keeps it focused:</span> facility reports, records, and status tracking in one place.</div>

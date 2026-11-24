@@ -11,8 +11,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ConcernController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        abort_unless($request->user()->canSubmitConcerns(), 403);
+
         return view('concerns.create', [
             'categories' => FacilityConcern::CATEGORIES,
         ]);
@@ -20,8 +22,12 @@ class ConcernController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->canSubmitConcerns(), 403);
+
         $data = $request->validate([
+            'title' => ['required', 'string', 'max:120'],
             'category' => ['required', 'in:'.implode(',', FacilityConcern::CATEGORIES)],
+            'building' => ['required', 'string', 'max:120'],
             'location' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'min:15', 'max:5000'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
@@ -31,7 +37,9 @@ class ConcernController extends Controller
 
         $concern = FacilityConcern::create([
             'user_id' => $request->user()->id,
+            'title' => trim($data['title']),
             'category' => $data['category'],
+            'building' => trim($data['building']),
             'location' => trim($data['location']),
             'description' => trim($data['description']),
             'photo_path' => $photoPath,
@@ -47,7 +55,7 @@ class ConcernController extends Controller
 
     public function show(Request $request, FacilityConcern $concern): View
     {
-        abort_unless($request->user()->isAdmin() || $concern->user_id === $request->user()->id, 403);
+        abort_unless($request->user()->canReviewConcerns() || $concern->user_id === $request->user()->id, 403);
 
         return view('concerns.show', [
             'concern' => $concern->load(['user', 'reviewer']),
@@ -57,7 +65,7 @@ class ConcernController extends Controller
 
     public function photo(Request $request, FacilityConcern $concern): BinaryFileResponse
     {
-        abort_unless($request->user()->isAdmin() || $concern->user_id === $request->user()->id, 403);
+        abort_unless($request->user()->canReviewConcerns() || $concern->user_id === $request->user()->id, 403);
         abort_unless($concern->photo_path, 404);
 
         $path = Storage::disk('local')->path($concern->photo_path);

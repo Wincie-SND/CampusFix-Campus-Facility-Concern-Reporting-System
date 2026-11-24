@@ -13,7 +13,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->isAdmin()) {
+        if ($user->isStaff()) {
             return redirect()->route('admin.concerns.index');
         }
 

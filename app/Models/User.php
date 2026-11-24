@@ -36,8 +36,18 @@ class User extends Authenticatable
         return $this->hasMany(FacilityConcern::class);
     }
 
-    public function isAdmin(): bool
+    public function canReviewConcerns(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['staff', 'faculty', 'admin'], true);
+    }
+
+    public function canSubmitConcerns(): bool
+    {
+        return in_array($this->role, ['student', 'guest', 'faculty'], true);
+    }
+
+    public function isStaff(): bool
+    {
+        return in_array($this->role, ['staff', 'admin'], true);
     }
 }

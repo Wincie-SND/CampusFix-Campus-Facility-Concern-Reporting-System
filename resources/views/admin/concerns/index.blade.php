@@ -1,61 +1,104 @@
 @extends('layouts.app')
 
-@section('title', 'Administrator workspace')
+@section('title', 'All reports')
 
 @section('content')
-<main class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
-    <section class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+<main>
+    <header class="cf-page-heading">
         <div>
-            <p class="text-xs font-extrabold uppercase tracking-[.2em] text-campus-blue">Administrator workspace</p>
-            <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-campus-ink">Facility concern queue</h1>
-            <p class="mt-2 text-sm text-slate-500">Search submitted reports, review the details, and keep statuses current.</p>
+            <p class="cf-eyebrow">Facility management</p>
+            <h1 class="cf-page-title">Every concern, accounted for.</h1>
+            <p class="cf-page-subtitle">Review campus reports, update their status, and keep a reliable record.</p>
         </div>
-        <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs font-semibold text-blue-900/75">CampusFix · Authorized administrator</div>
-    </section>
+        <span class="cf-heading-note">{{ now()->format('F j, Y') }}</span>
+    </header>
 
-    <section class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Concern queue totals">
-        @foreach ([['All reports', $counts['total'], 'bg-blue-50 text-campus-blue', '▤'], ['Pending review', $counts['pending'], 'bg-amber-50 text-amber-700', '◷'], ['In progress', $counts['in_progress'], 'bg-indigo-50 text-indigo-700', '↗'], ['Resolved', $counts['resolved'], 'bg-emerald-50 text-emerald-700', '✓']] as [$label, $value, $tone, $icon])
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div class="flex items-center justify-between"><span class="text-sm font-semibold text-slate-500">{{ $label }}</span><span class="grid h-9 w-9 place-items-center rounded-xl {{ $tone }}">{{ $icon }}</span></div><p class="mt-4 text-3xl font-extrabold tracking-tight text-campus-ink">{{ $value }}</p></div>
+    <section class="cf-stat-grid cf-admin-stats" aria-label="Concern queue totals">
+        @foreach ([['Total reports', $counts['total'], 'All submitted concerns', '▤'], ['Pending', $counts['pending'], 'Awaiting review', '◷'], ['In progress', $counts['in_progress'], 'Currently being addressed', '↗'], ['Resolved', $counts['resolved'], 'Closed successfully', '✓']] as [$label, $value, $detail, $icon])
+            <article class="cf-stat-card">
+                <div class="cf-stat-top"><span>{{ $label }}</span><span class="cf-stat-icon" aria-hidden="true">{{ $icon }}</span></div>
+                <div class="cf-stat-value">{{ str_pad((string) $value, 2, '0', STR_PAD_LEFT) }}</div>
+                <div class="cf-stat-detail">{{ $detail }}</div>
+            </article>
         @endforeach
     </section>
 
-    <section class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="border-b border-slate-100 px-5 py-5 sm:px-6">
-            <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between"><div><h2 class="text-lg font-extrabold text-campus-ink">Submitted reports</h2><p class="mt-1 text-sm text-slate-500">Search by reference, student, category, location, or description.</p></div><p class="text-xs font-semibold text-slate-400">{{ $concerns->total() }} total</p></div>
-            <form action="{{ route('admin.concerns.index') }}" method="GET" class="mt-5 grid gap-3 sm:grid-cols-[1fr_190px_auto]">
-                <label class="sr-only" for="q">Search reports</label>
-                <input id="q" name="q" type="search" value="{{ $search }}" placeholder="Search reports…" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm focus:border-campus-blue focus:ring-4 focus:ring-blue-100">
-                <label class="sr-only" for="status">Filter by status</label>
-                <select id="status" name="status" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 focus:border-campus-blue focus:ring-4 focus:ring-blue-100">
+    <div class="cf-admin-grid">
+        <section class="cf-panel cf-queue-panel">
+            <div class="cf-section-head cf-queue-head">
+                <div><h2 class="cf-section-title">Submitted reports</h2><p class="cf-section-copy">Search by concern, reporter, building, or reference number.</p></div>
+                <span class="cf-queue-meta">{{ $concerns->total() }} total</span>
+            </div>
+
+            <form action="{{ route('admin.concerns.index') }}" method="GET" class="cf-search-form">
+                <input class="cf-control" id="q" name="q" type="search" value="{{ $search }}" placeholder="Search reports…" aria-label="Search reports">
+                <select class="cf-control" id="status" name="status" aria-label="Filter by status">
                     <option value="">All statuses</option>
                     @foreach($statuses as $key => $label)<option value="{{ $key }}" @selected($status === $key)>{{ $label }}</option>@endforeach
                 </select>
-                <div class="flex gap-2"><button class="flex-1 rounded-xl bg-campus-blue px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-800 sm:flex-none">Search</button><a href="{{ route('admin.concerns.index') }}" class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-50">Clear</a></div>
+                <div class="cf-search-actions"><button class="cf-button cf-button-primary" type="submit">Search</button><a class="cf-button cf-button-outline" href="{{ route('admin.concerns.index') }}">Clear</a></div>
             </form>
-        </div>
 
-        @if($concerns->isEmpty())
-            <div class="px-6 py-14 text-center"><span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 text-xl text-slate-400">⌕</span><h3 class="mt-4 font-bold text-campus-ink">No reports match this search</h3><p class="mt-1 text-sm text-slate-500">Try another term or clear the filters.</p></div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[800px] text-left">
-                    <thead class="bg-slate-50 text-[11px] font-extrabold uppercase tracking-wider text-slate-400"><tr><th class="px-6 py-3">Report</th><th class="px-6 py-3">Student</th><th class="px-6 py-3">Location</th><th class="px-6 py-3">Submitted</th><th class="px-6 py-3">Status</th><th class="px-6 py-3"><span class="sr-only">Open report</span></th></tr></thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach($concerns as $concern)
-                            <tr class="transition hover:bg-slate-50">
-                                <td class="px-6 py-4"><a href="{{ route('concerns.show', $concern) }}" class="font-extrabold text-campus-blue hover:underline">{{ $concern->reference_code }}</a><p class="mt-1 text-xs text-slate-500">{{ $concern->category }}</p></td>
-                                <td class="px-6 py-4"><p class="text-sm font-semibold text-campus-ink">{{ $concern->user->name }}</p><p class="mt-0.5 text-xs text-slate-400">{{ $concern->user->email }}</p></td>
-                                <td class="max-w-56 truncate px-6 py-4 text-sm text-slate-600" title="{{ $concern->location }}">{{ $concern->location }}</td>
-                                <td class="px-6 py-4 text-sm text-slate-500">{{ $concern->created_at->format('M j, Y') }}</td>
-                                <td class="px-6 py-4">@include('partials.status-badge', ['concern' => $concern])</td>
-                                <td class="px-6 py-4 text-right"><a href="{{ route('concerns.show', $concern) }}" class="rounded-lg px-3 py-2 text-sm font-bold text-campus-blue hover:bg-blue-50">Review <span aria-hidden="true">→</span></a></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @if($concerns->hasPages())<div class="border-t border-slate-100 px-5 py-4 sm:px-6">{{ $concerns->links() }}</div>@endif
-        @endif
-    </section>
+            @if($concerns->isEmpty())
+                <div class="cf-empty"><strong>No reports found</strong>Try another search or clear the filters.</div>
+            @else
+                <div class="cf-report-table-wrap">
+                    <table class="cf-report-table cf-queue-table">
+                        <thead><tr><th>Concern</th><th>Building / location</th><th>Status</th></tr></thead>
+                        <tbody>
+                            @foreach($concerns as $concern)
+                                @php $rowUrl = route('admin.concerns.index', array_merge(request()->query(), ['selected' => $concern->id])); @endphp
+                                <tr @class(['cf-queue-row', 'is-selected' => $selectedConcern?->id === $concern->id])>
+                                    <td><a href="{{ $rowUrl }}"><div class="cf-row-title">{{ $concern->title ?: $concern->category }}</div><div class="cf-row-subtitle">{{ $concern->reference_code }} · {{ $concern->user->name }}</div></a></td>
+                                    <td><a href="{{ $rowUrl }}"><div class="cf-row-title">{{ $concern->building ?: 'Campus' }}</div><div class="cf-row-subtitle">{{ $concern->location }}</div></a></td>
+                                    <td>@include('partials.status-badge', ['concern' => $concern])</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if($concerns->hasPages())
+                    <div class="cf-pagination"><span>Page {{ $concerns->currentPage() }} of {{ $concerns->lastPage() }}</span><div class="cf-pagination-links">{{ $concerns->links() }}</div></div>
+                @endif
+            @endif
+        </section>
+
+        <aside class="cf-panel cf-detail-panel" aria-label="Selected report details">
+            @if($selectedConcern)
+                <div class="cf-detail-head">
+                    <div class="cf-detail-ref">{{ $selectedConcern->reference_code }}</div>
+                    <h2 class="cf-detail-title">{{ $selectedConcern->title ?: $selectedConcern->category }}</h2>
+                    <p class="cf-detail-category">{{ $selectedConcern->category }} · {{ $selectedConcern->created_at->format('M j, Y') }}</p>
+                    <div class="mt-3">@include('partials.status-badge', ['concern' => $selectedConcern])</div>
+                </div>
+                <div class="cf-detail-body">
+                    <section class="cf-detail-section">
+                        <p class="cf-detail-label">Reporter</p>
+                        <p class="cf-detail-value">{{ $selectedConcern->user->name }}<br><span class="cf-queue-meta">{{ $selectedConcern->user->email }}</span></p>
+                        <p class="cf-detail-label" style="margin-top: 11px">Location</p>
+                        <p class="cf-detail-value">{{ $selectedConcern->building ?: 'Campus' }} · {{ $selectedConcern->location }}</p>
+                        <p class="cf-detail-label" style="margin-top: 11px">Description</p>
+                        <p class="cf-detail-value cf-detail-desc">{{ Str::limit($selectedConcern->description, 240) }}</p>
+                    </section>
+                    <section class="cf-detail-section">
+                        <p class="cf-detail-label">Update status</p>
+                        @if($errors->any())<div class="cf-form-errors" style="margin-top: 9px">{{ $errors->first() }}</div>@endif
+                        <form action="{{ route('admin.concerns.update', $selectedConcern) }}" method="POST" class="cf-detail-form">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="return_to" value="queue">
+                            <select class="cf-control" name="status" id="selected-status" required aria-label="Report status">
+                                @foreach($statuses as $key => $label)<option value="{{ $key }}" @selected(old('status', $selectedConcern->status) === $key)>{{ $label }}</option>@endforeach
+                            </select>
+                            <textarea class="cf-control" name="admin_note" rows="3" maxlength="2000" placeholder="Add a note for the reporter…" aria-label="Update note">{{ old('admin_note', $selectedConcern->admin_note) }}</textarea>
+                            <button class="cf-button cf-button-primary" type="submit">Save changes</button>
+                        </form>
+                    </section>
+                </div>
+            @else
+                <div class="cf-detail-empty">Select a report from the queue to view its details and update its status.</div>
+            @endif
+        </aside>
+    </div>
 </main>
 @endsection
